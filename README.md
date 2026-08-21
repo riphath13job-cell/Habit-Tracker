@@ -98,6 +98,12 @@ src/screens/                Today / Habits / Stats / Settings
 
 ## Troubleshooting
 
+- **"Project is incompatible with this version of Expo Go"**: throughout 2026 the iOS App Store
+  version of Expo Go is stuck on **SDK 54** (Apple review delays), so this project is deliberately
+  pinned to SDK 54. Updating Expo Go won't help — there is no newer store version. Before ever
+  upgrading the project (`npm install expo@latest && npx expo install --fix`), check whether the
+  store Expo Go caught up at [expo.dev/go](https://expo.dev/go).
+
 - **Workflow fails at xcodebuild**: open the run log; if it complains about Xcode/iOS SDK
   versions, try changing `runs-on:` to `macos-latest`, or pin a newer Xcode with
   `sudo xcode-select -s /Applications/Xcode_<version>.app` before the build step.
