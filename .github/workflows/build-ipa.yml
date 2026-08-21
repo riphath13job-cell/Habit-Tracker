@@ -1,0 +1,59 @@
+name: Build unsigned iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    name: Unsigned IPA (for Sideloadly)
+    # macOS runners are free for PUBLIC repositories — keep the repo public.
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prebuild native iOS project (runs CocoaPods too)
+        run: npx expo prebuild --platform ios
+        env:
+          EXPO_NO_TELEMETRY: '1'
+
+      - name: Build unsigned archive
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -workspace ios/*.xcworkspace \
+            -scheme HabitTracker \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/HabitTracker.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            clean archive 2>&1 | tail -200
+
+      - name: Package IPA
+        run: |
+          mkdir -p "$RUNNER_TEMP/Payload"
+          cp -R "$RUNNER_TEMP/HabitTracker.xcarchive/Products/Applications/"* "$RUNNER_TEMP/Payload/"
+          cd "$RUNNER_TEMP"
+          zip -qry HabitTracker.ipa Payload
+          mv HabitTracker.ipa "$GITHUB_WORKSPACE/HabitTracker.ipa"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HabitTracker-ipa
+          path: HabitTracker.ipa
+          retention-days: 30
