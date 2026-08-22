@@ -24,6 +24,32 @@ you'll only ever use one).
 
 ---
 
+## Using it inside Expo Go (current setup — no install needed)
+
+For now the app is used **inside the Expo Go app** instead of a sideloaded home-screen app.
+Zero maintenance: no 7-day expiry, no cables, no weekly re-signing. Things to know:
+
+- **The app needs the PC while in dev mode.** Expo Go loads it from `npx expo start`, so it only
+  opens while the dev server runs and the phone is on the same Wi-Fi. If the connection is
+  blocked (campus/hotel Wi-Fi), start with `npx expo start --tunnel` to route over the internet.
+- **Use it anywhere without the PC (still free) — publish it:**
+  ```bash
+  npm install -g eas-cli
+  npx expo login      # free expo.dev account
+  eas init
+  eas update --message "first version"
+  ```
+  The QR/link printed opens the app in Expo Go from anywhere; no PC needed. Habit data stays on
+  the phone inside Expo Go either way.
+- **Data care.** The database lives inside Expo Go's storage. Don't delete Expo Go (that wipes
+  the data) and use **Settings → Export backup** occasionally. That same export is how you move
+  your data into the standalone sideloaded app later — it lives in a separate sandbox.
+- **Switching to the standalone app later** is not blocked by anything: push the repo to GitHub,
+  run the Actions workflow, install via Sideloadly (see below). The export/import in Settings
+  moves your history over.
+
+---
+
 ## 1) Daily development on Windows (instant preview)
 
 ```bash
