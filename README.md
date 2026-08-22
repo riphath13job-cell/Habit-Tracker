@@ -1,12 +1,19 @@
-# Habit Tracker 🎯
+# My Apps 🎯📝
 
-A personal habit tracker for iPhone — built and maintained **completely free, with no Mac and no
-$99/year Apple Developer Program**. It installs on your iPhone via free-app-identity sideloading
-(Sideloadly).
+A personal mini-app hub for iPhone — **Habit Tracker** and **Notes** — built and maintained
+**completely free, with no Mac and no $99/year Apple Developer Program**. It installs on your
+iPhone via free-app-identity sideloading (Sideloadly), or runs inside Expo Go.
 
-**Features:** daily check-offs with a progress ring, streaks (current + best), weekday schedules,
-per-habit colors & emoji, daily local-notification reminders, 30-day stats, weekly chart, per-habit
-calendar, JSON backup export/import, automatic dark mode.
+**Habit Tracker:** daily check-offs with a progress ring, streaks (current + best), weekday
+schedules, per-habit colors & emoji, daily local-notification reminders, 30-day stats, weekly
+chart, per-habit calendar, automatic dark mode.
+
+**Notes:** quick notes with title + body, autosave as you type, list with previews and relative
+dates.
+
+**Hub:** the app opens on a launcher screen with a tile per mini-app; your own icon
+(`assets/hub-icon.png`) is the app icon. Backups (Settings → Export) include habits **and**
+notes.
 
 ---
 
@@ -111,15 +118,17 @@ file with all habits and check-ins; **Import backup** restores it.
 ## Project structure
 
 ```
-App.tsx                     app root: bottom tab navigation
-src/db.ts                   SQLite schema + queries + backup import/export
+App.tsx                     app root: launcher → Habit app (tabs) / Notes app (stack)
+src/db.ts                   SQLite schema + queries (habits, completions, notes) + backups
 src/date-utils.ts           day keys, schedules, streak math, completion rates
 src/notifications.ts        local daily reminders (expo-notifications)
+src/screens/LauncherScreen.tsx  app hub with one tile per mini-app
 src/components/HabitForm.tsx    add/edit habit (emoji, color, days, reminder time)
 src/components/CalendarView.tsx per-habit month history grid
 src/components/ProgressRing.tsx SVG progress ring
 src/components/GlassTabBar.tsx   floating "liquid glass" bottom bar with sliding pill
 src/screens/                Today / Habits / Stats / Settings
+src/screens/notes/          Notes list + autosaving editor
 .github/workflows/build-ipa.yml  free cloud build → unsigned IPA
 ```
 

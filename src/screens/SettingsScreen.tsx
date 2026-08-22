@@ -137,8 +137,8 @@ export function SettingsScreen() {
         <Text style={[styles.sectionLabel, { color: theme.sub }]}>BACKUP</Text>
         <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
           <Text style={[styles.cardSub, { color: theme.sub, marginBottom: 10 }]}>
-            Your data lives only on this phone. If the app is ever deleted, its data goes with it —
-            export a backup once in a while.
+            Your habits and notes live only on this phone. If the app is ever deleted, its data
+            goes with it — export a backup once in a while.
           </Text>
           <View style={styles.buttonRow}>
             <Pressable

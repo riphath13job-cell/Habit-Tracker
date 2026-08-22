@@ -126,3 +126,17 @@ export function greeting(): string {
   if (h < 18) return 'Good afternoon';
   return 'Good evening';
 }
+
+export function formatNoteDate(ts: number): string {
+  const d = new Date(ts);
+  const now = new Date();
+  if (dayKey(d) === dayKey(now)) {
+    return `Today, ${d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`;
+  }
+  if (dayKey(d) === dayKey(addDays(now, -1))) return 'Yesterday';
+  return d.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    ...(d.getFullYear() === now.getFullYear() ? {} : { year: 'numeric' }),
+  });
+}

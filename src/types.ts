@@ -21,10 +21,20 @@ export interface Completion {
   day: string;
 }
 
+export interface Note {
+  id: number;
+  title: string;
+  body: string;
+  created_at: number;
+  updated_at: number;
+}
+
 export interface ExportBundle {
   format: 'habit-tracker-backup';
-  version: 1;
+  version: 2;
   exported_at: string;
   habits: Habit[];
   completions: Completion[];
+  /** Present since version 2. */
+  notes?: Note[];
 }

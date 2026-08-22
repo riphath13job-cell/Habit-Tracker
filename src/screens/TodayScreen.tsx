@@ -60,9 +60,17 @@ export function TodayScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.bg }]} edges={['top']}>
       <View style={styles.content}>
-        <View>
-          <Text style={[styles.greeting, { color: theme.sub }]}>{greeting()} 👋</Text>
-          <Text style={[styles.date, { color: theme.text }]}>{DATE_FMT.format(new Date())}</Text>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={[styles.greeting, { color: theme.sub }]}>{greeting()} 👋</Text>
+            <Text style={[styles.date, { color: theme.text }]}>{DATE_FMT.format(new Date())}</Text>
+          </View>
+          <Pressable
+            onPress={() => navigation.navigate('Launcher')}
+            hitSlop={8}
+            style={({ pressed }) => [styles.appsButton, { borderColor: theme.border }, pressed && { opacity: 0.6 }]}>
+            <MaterialIcons name="apps" size={20} color={theme.sub} />
+          </Pressable>
         </View>
 
         {total === 0 ? (
@@ -154,6 +162,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginTop: 8,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  appsButton: {
+    borderWidth: 1,
+    borderRadius: 999,
+    padding: 8,
+    marginTop: 10,
   },
   date: {
     fontSize: 24,

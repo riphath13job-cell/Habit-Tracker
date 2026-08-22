@@ -1,5 +1,5 @@
 import * as SQLite from 'expo-sqlite';
-import type { Completion, ExportBundle, Habit } from './types';
+import type { Completion, ExportBundle, Habit, Note } from './types';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
@@ -24,6 +24,13 @@ function getDb(): Promise<SQLite.SQLiteDatabase> {
           UNIQUE (habit_id, day)
         );
         CREATE INDEX IF NOT EXISTS idx_completions_day ON completions (day);
+        CREATE TABLE IF NOT EXISTS notes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL DEFAULT '',
+          body TEXT NOT NULL DEFAULT '',
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        );
       `);
       return db;
     })();
@@ -94,13 +101,14 @@ export async function toggleCompletion(habitId: number, day: string): Promise<vo
 }
 
 export async function exportBundle(): Promise<ExportBundle> {
-  const [habits, completions] = await Promise.all([listHabits(), allCompletions()]);
+  const [habits, completions, notes] = await Promise.all([listHabits(), allCompletions(), listNotes()]);
   return {
     format: 'habit-tracker-backup',
-    version: 1,
+    version: 2,
     exported_at: new Date().toISOString(),
     habits,
     completions,
+    notes,
   };
 }
 
@@ -110,6 +118,7 @@ export async function importBundle(bundle: ExportBundle): Promise<void> {
   await db.withExclusiveTransactionAsync(async (tx) => {
     await tx.runAsync('DELETE FROM completions');
     await tx.runAsync('DELETE FROM habits');
+    await tx.runAsync('DELETE FROM notes');
     for (const h of bundle.habits) {
       await tx.runAsync(
         `INSERT INTO habits (id, name, emoji, color, schedule, reminder_minutes, created_at)
@@ -123,5 +132,48 @@ export async function importBundle(bundle: ExportBundle): Promise<void> {
         [c.habit_id, c.day],
       );
     }
+    for (const n of bundle.notes ?? []) {
+      await tx.runAsync(
+        `INSERT INTO notes (id, title, body, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
+        [n.id, n.title ?? '', n.body ?? '', n.created_at ?? Date.now(), n.updated_at ?? Date.now()],
+      );
+    }
   });
+}
+
+// ---------------------------------------------------------------------------
+// Notes
+// ---------------------------------------------------------------------------
+
+export async function listNotes(): Promise<Note[]> {
+  const db = await getDb();
+  return db.getAllAsync<Note>('SELECT * FROM notes ORDER BY updated_at DESC');
+}
+
+export async function getNote(id: number): Promise<Note | null> {
+  const db = await getDb();
+  return db.getFirstAsync<Note>('SELECT * FROM notes WHERE id = ?', [id]);
+}
+
+export async function createNote(input: { title: string; body: string }): Promise<Note> {
+  const db = await getDb();
+  const now = Date.now();
+  const result = await db.runAsync(
+    'INSERT INTO notes (title, body, created_at, updated_at) VALUES (?, ?, ?, ?)',
+    [input.title, input.body, now, now],
+  );
+  return { id: Number(result.lastInsertRowId), title: input.title, body: input.body, created_at: now, updated_at: now };
+}
+
+export async function updateNote(id: number, input: { title: string; body: string }): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(
+    'UPDATE notes SET title = ?, body = ?, updated_at = ? WHERE id = ?',
+    [input.title, input.body, Date.now(), id],
+  );
+}
+
+export async function deleteNote(id: number): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('DELETE FROM notes WHERE id = ?', [id]);
 }
