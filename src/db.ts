@@ -28,10 +28,19 @@ function getDb(): Promise<SQLite.SQLiteDatabase> {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           title TEXT NOT NULL DEFAULT '',
           body TEXT NOT NULL DEFAULT '',
+          favorite INTEGER NOT NULL DEFAULT 0,
+          deleted_at INTEGER,
           created_at INTEGER NOT NULL,
           updated_at INTEGER NOT NULL
         );
       `);
+      // Columns added after the first release — safe to re-run (errors ignored).
+      try {
+        await db.execAsync('ALTER TABLE notes ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0');
+      } catch { /* column exists */ }
+      try {
+        await db.execAsync('ALTER TABLE notes ADD COLUMN deleted_at INTEGER');
+      } catch { /* column exists */ }
       return db;
     })();
   }
@@ -101,7 +110,12 @@ export async function toggleCompletion(habitId: number, day: string): Promise<vo
 }
 
 export async function exportBundle(): Promise<ExportBundle> {
-  const [habits, completions, notes] = await Promise.all([listHabits(), allCompletions(), listNotes()]);
+  const db = await getDb();
+  const [habits, completions, notes] = await Promise.all([
+    listHabits(),
+    allCompletions(),
+    db.getAllAsync<Note>('SELECT * FROM notes'), // include trashed notes — full backup
+  ]);
   return {
     format: 'habit-tracker-backup',
     version: 2,
@@ -134,8 +148,9 @@ export async function importBundle(bundle: ExportBundle): Promise<void> {
     }
     for (const n of bundle.notes ?? []) {
       await tx.runAsync(
-        `INSERT INTO notes (id, title, body, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
-        [n.id, n.title ?? '', n.body ?? '', n.created_at ?? Date.now(), n.updated_at ?? Date.now()],
+        `INSERT INTO notes (id, title, body, favorite, deleted_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [n.id, n.title ?? '', n.body ?? '', n.favorite ?? 0, n.deleted_at ?? null, n.created_at ?? Date.now(), n.updated_at ?? Date.now()],
       );
     }
   });
@@ -145,9 +160,26 @@ export async function importBundle(bundle: ExportBundle): Promise<void> {
 // Notes
 // ---------------------------------------------------------------------------
 
+/** Active notes (favorites first), excluding Trash. */
 export async function listNotes(): Promise<Note[]> {
   const db = await getDb();
-  return db.getAllAsync<Note>('SELECT * FROM notes ORDER BY updated_at DESC');
+  return db.getAllAsync<Note>(
+    'SELECT * FROM notes WHERE deleted_at IS NULL ORDER BY favorite DESC, updated_at DESC',
+  );
+}
+
+export async function listFavoriteNotes(): Promise<Note[]> {
+  const db = await getDb();
+  return db.getAllAsync<Note>(
+    'SELECT * FROM notes WHERE deleted_at IS NULL AND favorite = 1 ORDER BY updated_at DESC',
+  );
+}
+
+export async function listTrashedNotes(): Promise<Note[]> {
+  const db = await getDb();
+  return db.getAllAsync<Note>(
+    'SELECT * FROM notes WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC',
+  );
 }
 
 export async function getNote(id: number): Promise<Note | null> {
@@ -162,7 +194,15 @@ export async function createNote(input: { title: string; body: string }): Promis
     'INSERT INTO notes (title, body, created_at, updated_at) VALUES (?, ?, ?, ?)',
     [input.title, input.body, now, now],
   );
-  return { id: Number(result.lastInsertRowId), title: input.title, body: input.body, created_at: now, updated_at: now };
+  return {
+    id: Number(result.lastInsertRowId),
+    title: input.title,
+    body: input.body,
+    favorite: 0,
+    deleted_at: null,
+    created_at: now,
+    updated_at: now,
+  };
 }
 
 export async function updateNote(id: number, input: { title: string; body: string }): Promise<void> {
@@ -171,6 +211,26 @@ export async function updateNote(id: number, input: { title: string; body: strin
     'UPDATE notes SET title = ?, body = ?, updated_at = ? WHERE id = ?',
     [input.title, input.body, Date.now(), id],
   );
+}
+
+export async function setNoteFavorite(id: number, favorite: boolean): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('UPDATE notes SET favorite = ? WHERE id = ?', [favorite ? 1 : 0, id]);
+}
+
+export async function trashNote(id: number): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('UPDATE notes SET deleted_at = ? WHERE id = ?', [Date.now(), id]);
+}
+
+export async function restoreNote(id: number): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('UPDATE notes SET deleted_at = NULL WHERE id = ?', [id]);
+}
+
+export async function emptyTrash(): Promise<void> {
+  const db = await getDb();
+  await db.runAsync('DELETE FROM notes WHERE deleted_at IS NOT NULL');
 }
 
 export async function deleteNote(id: number): Promise<void> {

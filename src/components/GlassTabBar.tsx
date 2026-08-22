@@ -3,27 +3,31 @@ import { Animated, Platform, Pressable, StyleSheet, Text, useColorScheme, View }
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useTheme } from '../theme';
+import { useHub } from '../hub/HubContext';
 
 const BAR_HEIGHT = 62;
 const PILL_HEIGHT = 38;
 
 /**
  * Floating "liquid glass" bottom tab bar with an animated pill that slides
- * between tabs. Fakes the iOS 26 Liquid Glass look with blur + sheen gradient
- * (the native glass APIs need a newer SDK than the App Store Expo Go supports).
+ * between tabs, plus a trailing folder button that opens the app hub.
  */
 export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const theme = useTheme();
   const dark = useColorScheme() === 'dark';
   const insets = useSafeAreaInsets();
+  const { openFolder, folderOpen } = useHub();
   const [barWidth, setBarWidth] = useState(0);
   const translateX = useRef(new Animated.Value(0)).current;
 
   const tabCount = state.routes.length;
-  const tabWidth = barWidth / tabCount;
+  // one extra slot for the folder button so the pill math stays even
+  const slotCount = tabCount + 1;
+  const tabWidth = barWidth / slotCount;
 
   useEffect(() => {
     if (barWidth === 0) return;
@@ -114,6 +118,24 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
               </Pressable>
             );
           })}
+          <Pressable
+            style={styles.tab}
+            onPress={() => {
+              Haptics.selectionAsync();
+              openFolder();
+            }}
+            android_ripple={{ borderless: true, radius: 26, color: theme.chipBg }}>
+            <MaterialIcons
+              name={folderOpen ? 'folder-open' : 'folder'}
+              size={23}
+              color={folderOpen ? theme.accent : theme.sub}
+            />
+            <Text
+              style={[styles.label, { color: folderOpen ? theme.accent : theme.sub }, folderOpen && styles.labelFocused]}
+              numberOfLines={1}>
+              Apps
+            </Text>
+          </Pressable>
         </View>
       </View>
     </View>

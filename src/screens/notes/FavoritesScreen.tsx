@@ -4,18 +4,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import type { Note } from '../../types';
-import { listNotes, setNoteFavorite, trashNote } from '../../db';
+import { listFavoriteNotes, setNoteFavorite, trashNote } from '../../db';
 import { useTheme } from '../../theme';
 import { NoteCard } from '../../components/NoteCard';
 
-export function NotesListScreen() {
+export function FavoritesScreen() {
   const theme = useTheme();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
   const [notes, setNotes] = useState<Note[] | null>(null);
 
   const load = useCallback(async () => {
-    setNotes(await listNotes());
+    setNotes(await listFavoriteNotes());
   }, []);
 
   useFocusEffect(
@@ -27,21 +27,14 @@ export function NotesListScreen() {
   function confirmTrash(note: Note) {
     Alert.alert('Move to Trash?', `“${note.title.trim() || 'Untitled'}” will be moved to Trash.`, [
       { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Move to Trash',
-        style: 'destructive',
-        onPress: async () => {
-          await trashNote(note.id);
-          load();
-        },
-      },
+      { text: 'Move to Trash', style: 'destructive', onPress: async () => { await trashNote(note.id); load(); } },
     ]);
   }
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.bg }]} edges={['top']}>
       <View style={styles.headerRow}>
-        <Text style={[styles.title, { color: theme.text }]}>Notes</Text>
+        <Text style={[styles.title, { color: theme.text }]}>Favorites ⭐</Text>
         <Pressable
           onPress={() => navigation.navigate('NoteEditor', {})}
           style={[styles.newButton, { backgroundColor: theme.accent }]}>
@@ -57,9 +50,9 @@ export function NotesListScreen() {
         ListEmptyComponent={
           notes === null ? null : (
             <View style={styles.emptyWrap}>
-              <Text style={styles.emptyEmoji}>📝</Text>
+              <Text style={styles.emptyEmoji}>⭐</Text>
               <Text style={[styles.emptyText, { color: theme.sub }]}>
-                No notes yet — tap "New" to write your first one.
+                No favorites yet — tap the star on a note to pin it here.
               </Text>
             </View>
           )
@@ -70,18 +63,8 @@ export function NotesListScreen() {
             onPress={() => navigation.navigate('NoteEditor', { id: item.id })}
             actions={
               <>
-                <Pressable
-                  onPress={async () => {
-                    await setNoteFavorite(item.id, item.favorite !== 1);
-                    load();
-                  }}
-                  hitSlop={8}
-                  style={styles.iconBtn}>
-                  <MaterialIcons
-                    name={item.favorite === 1 ? 'star' : 'star-border'}
-                    size={20}
-                    color={item.favorite === 1 ? '#F59E0B' : theme.sub}
-                  />
+                <Pressable onPress={async () => { await setNoteFavorite(item.id, false); load(); }} hitSlop={8} style={styles.iconBtn}>
+                  <MaterialIcons name="star" size={20} color="#F59E0B" />
                 </Pressable>
                 <Pressable onPress={() => confirmTrash(item)} hitSlop={8} style={styles.iconBtn}>
                   <MaterialIcons name="delete-outline" size={20} color={theme.sub} />

@@ -9,11 +9,12 @@ schedules, per-habit colors & emoji, daily local-notification reminders, 30-day 
 chart, per-habit calendar, automatic dark mode.
 
 **Notes:** quick notes with title + body, autosave as you type, list with previews and relative
-dates.
+dates, favorites ⭐, and a Trash page with restore / delete-forever / empty-trash.
 
-**Hub:** the app opens on a launcher screen with a tile per mini-app; your own icon
-(`assets/hub-icon.png`) is the app icon. Backups (Settings → Export) include habits **and**
-notes.
+**Hub:** the app opens on a launcher screen with a tile per mini-app. Every mini-app's glass
+bottom bar has an **Apps folder button** that opens an iOS-style liquid-glass folder overlay for
+switching apps. The app icon is generated from code (`assets/icon.png`). Backups
+(Settings → Export) include habits **and** notes (also trashed ones).
 
 ---
 
@@ -123,6 +124,7 @@ src/db.ts                   SQLite schema + queries (habits, completions, notes)
 src/date-utils.ts           day keys, schedules, streak math, completion rates
 src/notifications.ts        local daily reminders (expo-notifications)
 src/screens/LauncherScreen.tsx  app hub with one tile per mini-app
+src/hub/                     shared app tiles, glass folder overlay, app switching
 src/components/HabitForm.tsx    add/edit habit (emoji, color, days, reminder time)
 src/components/CalendarView.tsx per-habit month history grid
 src/components/ProgressRing.tsx SVG progress ring

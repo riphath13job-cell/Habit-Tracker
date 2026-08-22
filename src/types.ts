@@ -25,6 +25,10 @@ export interface Note {
   id: number;
   title: string;
   body: string;
+  /** 1 = favorite (shown on the Favorites page). */
+  favorite: number;
+  /** Set (epoch ms) while the note sits in the Trash. */
+  deleted_at: number | null;
   created_at: number;
   updated_at: number;
 }

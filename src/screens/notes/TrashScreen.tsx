@@ -1,21 +1,19 @@
 import React, { useCallback, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import type { Note } from '../../types';
-import { listNotes, setNoteFavorite, trashNote } from '../../db';
+import { deleteNote, emptyTrash, listTrashedNotes, restoreNote } from '../../db';
 import { useTheme } from '../../theme';
 import { NoteCard } from '../../components/NoteCard';
 
-export function NotesListScreen() {
+export function TrashScreen() {
   const theme = useTheme();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const navigation = useNavigation<any>();
   const [notes, setNotes] = useState<Note[] | null>(null);
 
   const load = useCallback(async () => {
-    setNotes(await listNotes());
+    setNotes(await listTrashedNotes());
   }, []);
 
   useFocusEffect(
@@ -24,30 +22,51 @@ export function NotesListScreen() {
     }, [load]),
   );
 
-  function confirmTrash(note: Note) {
-    Alert.alert('Move to Trash?', `“${note.title.trim() || 'Untitled'}” will be moved to Trash.`, [
+  function confirmDeleteForever(note: Note) {
+    Alert.alert('Delete forever?', 'This note cannot be restored afterwards.', [
       { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Move to Trash',
+        text: 'Delete forever',
         style: 'destructive',
         onPress: async () => {
-          await trashNote(note.id);
+          await deleteNote(note.id);
           load();
         },
       },
     ]);
   }
 
+  function confirmEmpty() {
+    Alert.alert('Empty Trash?', 'All notes in Trash will be deleted permanently.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Empty Trash',
+        style: 'destructive',
+        onPress: async () => {
+          await emptyTrash();
+          load();
+        },
+      },
+    ]);
+  }
+
+  const count = notes?.length ?? 0;
+
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.bg }]} edges={['top']}>
       <View style={styles.headerRow}>
-        <Text style={[styles.title, { color: theme.text }]}>Notes</Text>
-        <Pressable
-          onPress={() => navigation.navigate('NoteEditor', {})}
-          style={[styles.newButton, { backgroundColor: theme.accent }]}>
-          <MaterialIcons name="add" size={22} color="#FFFFFF" />
-          <Text style={styles.newButtonText}>New</Text>
-        </Pressable>
+        <Text style={[styles.title, { color: theme.text }]}>Trash 🗑️</Text>
+        {count > 0 ? (
+          <Pressable
+            onPress={confirmEmpty}
+            style={({ pressed }) => [
+              styles.emptyButton,
+              { borderColor: theme.danger },
+              pressed && { opacity: 0.6 },
+            ]}>
+            <Text style={[styles.emptyButtonText, { color: theme.danger }]}>Empty Trash</Text>
+          </Pressable>
+        ) : null}
       </View>
 
       <FlatList
@@ -57,34 +76,27 @@ export function NotesListScreen() {
         ListEmptyComponent={
           notes === null ? null : (
             <View style={styles.emptyWrap}>
-              <Text style={styles.emptyEmoji}>📝</Text>
-              <Text style={[styles.emptyText, { color: theme.sub }]}>
-                No notes yet — tap "New" to write your first one.
-              </Text>
+              <Text style={styles.emptyEmoji}>🗑️</Text>
+              <Text style={[styles.emptyText, { color: theme.sub }]}>Trash is empty.</Text>
             </View>
           )
         }
         renderItem={({ item }) => (
           <NoteCard
             note={item}
-            onPress={() => navigation.navigate('NoteEditor', { id: item.id })}
             actions={
               <>
                 <Pressable
                   onPress={async () => {
-                    await setNoteFavorite(item.id, item.favorite !== 1);
+                    await restoreNote(item.id);
                     load();
                   }}
                   hitSlop={8}
                   style={styles.iconBtn}>
-                  <MaterialIcons
-                    name={item.favorite === 1 ? 'star' : 'star-border'}
-                    size={20}
-                    color={item.favorite === 1 ? '#F59E0B' : theme.sub}
-                  />
+                  <MaterialIcons name="restore" size={20} color={theme.accent} />
                 </Pressable>
-                <Pressable onPress={() => confirmTrash(item)} hitSlop={8} style={styles.iconBtn}>
-                  <MaterialIcons name="delete-outline" size={20} color={theme.sub} />
+                <Pressable onPress={() => confirmDeleteForever(item)} hitSlop={8} style={styles.iconBtn}>
+                  <MaterialIcons name="delete-forever" size={20} color={theme.danger} />
                 </Pressable>
               </>
             }
@@ -111,18 +123,15 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '800',
   },
-  newButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+  emptyButton: {
+    borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 14,
-    paddingVertical: 9,
+    paddingVertical: 8,
   },
-  newButtonText: {
-    color: '#FFFFFF',
+  emptyButtonText: {
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 13,
   },
   list: {
     paddingHorizontal: 20,

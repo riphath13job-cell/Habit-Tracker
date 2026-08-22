@@ -3,7 +3,7 @@ import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-nativ
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { createNote, deleteNote, getNote, updateNote } from '../../db';
+import { createNote, getNote, setNoteFavorite, trashNote, updateNote } from '../../db';
 import { formatNoteDate } from '../../date-utils';
 import { useTheme } from '../../theme';
 
@@ -20,6 +20,7 @@ export function NoteEditorScreen() {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [noteExists, setNoteExists] = useState(noteId !== null);
+  const [favorite, setFavorite] = useState(false);
   const [editedAt, setEditedAt] = useState<number | null>(null);
   const idRef = useRef<number | null>(noteId);
   const skipSave = useRef(true);
@@ -37,6 +38,7 @@ export function NoteEditorScreen() {
       if (note) {
         setTitle(note.title);
         setBody(note.body);
+        setFavorite(note.favorite === 1);
         setEditedAt(note.updated_at);
       }
       skipSave.current = false;
@@ -84,15 +86,24 @@ export function NoteEditorScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation, title, body]);
 
+  async function toggleFavorite() {
+    if (idRef.current === null) return;
+    const next = !favorite;
+    setFavorite(next);
+    await setNoteFavorite(idRef.current, next);
+  }
+
   function confirmDelete() {
-    Alert.alert('Delete note?', 'This note will be removed permanently.', [
+    Alert.alert('Move to Trash?', 'You can restore it later from the Trash page.', [
       { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Delete',
+        text: 'Move to Trash',
         style: 'destructive',
         onPress: async () => {
           flush();
-          if (idRef.current !== null) await deleteNote(idRef.current);
+          if (idRef.current !== null) {
+            await trashNote(idRef.current);
+          }
           navigation.goBack();
         },
       },
@@ -111,9 +122,18 @@ export function NoteEditorScreen() {
           </Text>
         </View>
         {noteExists ? (
-          <Pressable onPress={confirmDelete} hitSlop={8} style={styles.iconBtn}>
-            <MaterialIcons name="delete-outline" size={22} color={theme.danger} />
-          </Pressable>
+          <View style={styles.headerActions}>
+            <Pressable onPress={toggleFavorite} hitSlop={8} style={styles.iconBtn}>
+              <MaterialIcons
+                name={favorite ? 'star' : 'star-border'}
+                size={22}
+                color={favorite ? '#F59E0B' : theme.sub}
+              />
+            </Pressable>
+            <Pressable onPress={confirmDelete} hitSlop={8} style={styles.iconBtn}>
+              <MaterialIcons name="delete-outline" size={22} color={theme.danger} />
+            </Pressable>
+          </View>
         ) : (
           <View style={styles.iconBtn} />
         )}
@@ -164,6 +184,10 @@ const styles = StyleSheet.create({
   iconBtn: {
     padding: 8,
     minWidth: 38,
+    alignItems: 'center',
+  },
+  headerActions: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
   editor: {
