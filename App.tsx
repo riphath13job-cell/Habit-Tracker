@@ -8,6 +8,7 @@ import { TodayScreen } from './src/screens/TodayScreen';
 import { HabitsScreen } from './src/screens/HabitsScreen';
 import { StatsScreen } from './src/screens/StatsScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { GlassTabBar } from './src/components/GlassTabBar';
 import { configureNotifications } from './src/notifications';
 
 configureNotifications();
@@ -29,10 +30,8 @@ export default function App() {
     <NavigationContainer theme={dark ? DarkTheme : DefaultTheme}>
       <StatusBar style={dark ? 'light' : 'dark'} />
       <Tab.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-        }}>
+        screenOptions={{ headerShown: false }}
+        tabBar={(props) => <GlassTabBar {...props} />}>
         <Tab.Screen name="Today" component={TodayScreen} options={tabIcon('today')} />
         <Tab.Screen name="Habits" component={HabitsScreen} options={tabIcon('list')} />
         <Tab.Screen name="Stats" component={StatsScreen} options={tabIcon('bar-chart')} />

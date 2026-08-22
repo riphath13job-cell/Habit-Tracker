@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   },
   list: {
     gap: 10,
-    paddingBottom: 24,
+    paddingBottom: 110,
   },
   habitCard: {
     flexDirection: 'row',

@@ -118,6 +118,7 @@ src/notifications.ts        local daily reminders (expo-notifications)
 src/components/HabitForm.tsx    add/edit habit (emoji, color, days, reminder time)
 src/components/CalendarView.tsx per-habit month history grid
 src/components/ProgressRing.tsx SVG progress ring
+src/components/GlassTabBar.tsx   floating "liquid glass" bottom bar with sliding pill
 src/screens/                Today / Habits / Stats / Settings
 .github/workflows/build-ipa.yml  free cloud build → unsigned IPA
 ```
