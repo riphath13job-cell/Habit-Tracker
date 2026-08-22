@@ -42,13 +42,16 @@ Zero maintenance: no 7-day expiry, no cables, no weekly re-signing. Things to kn
   blocked (campus/hotel Wi-Fi), start with `npx expo start --tunnel` to route over the internet.
 - **Use it anywhere without the PC (still free) — publish it:**
   ```bash
-  npm install -g eas-cli
-  npx expo login      # free expo.dev account
-  eas init
-  eas update --message "first version"
+  npx eas login        # free account: create it at https://expo.dev/signup first
+  npx eas init         # registers the project (writes its ID into app.json)
+  npx eas update --branch preview --message "first version"
   ```
-  The QR/link printed opens the app in Expo Go from anywhere; no PC needed. Habit data stays on
-  the phone inside Expo Go either way.
+  The command prints a **link + QR** (`https://u.expo.dev/…`). Open it on the iPhone (camera or
+  Safari) and it launches the app in Expo Go from anywhere — PC off, any network. After changing
+  the app, re-run the same `eas update` command and the link serves the new version. Notes:
+  never add a custom `runtimeVersion` to app.json (Expo Go refuses it), and stay on the SDK the
+  App Store Expo Go supports (54 — see Troubleshooting). Habit data stays on the phone inside
+  Expo Go either way.
 - **Data care.** The database lives inside Expo Go's storage. Don't delete Expo Go (that wipes
   the data) and use **Settings → Export backup** occasionally. That same export is how you move
   your data into the standalone sideloaded app later — it lives in a separate sandbox.
