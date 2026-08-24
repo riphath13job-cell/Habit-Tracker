@@ -5,6 +5,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import * as Notifications from 'expo-notifications';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import Constants from 'expo-constants';
 import { MaterialIcons } from '@expo/vector-icons';
 import { exportBundle, importBundle, listHabits } from '../db';
@@ -48,10 +50,19 @@ export function SettingsScreen() {
     setBusy(true);
     try {
       const bundle = await exportBundle();
-      await Share.share({
-        title: 'Habit Tracker backup',
-        message: JSON.stringify(bundle, null, 2),
-      });
+      const json = JSON.stringify(bundle, null, 2);
+      // Share a real file so "Save to Files" is available on iOS.
+      if (await Sharing.isAvailableAsync()) {
+        const stamp = new Date().toISOString().slice(0, 10);
+        const file = new File(Paths.cache, `habit-tracker-backup-${stamp}.json`);
+        file.write(json);
+        await Sharing.shareAsync(file.uri, {
+          mimeType: 'application/json',
+          dialogTitle: 'Save your backup',
+        });
+      } else {
+        await Share.share({ title: 'Habit Tracker backup', message: json });
+      }
     } finally {
       setBusy(false);
     }
