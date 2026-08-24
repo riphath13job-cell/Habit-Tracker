@@ -30,6 +30,18 @@
     "plugins": [
       "expo-sqlite",
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "83fc7deb-9fa3-472b-8df5-32e26f6a890d"
+      }
+    },
+    "owner": "riphath13",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/83fc7deb-9fa3-472b-8df5-32e26f6a890d"
+    }
   }
 }
