@@ -2,12 +2,13 @@ import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Icon } from '../icons';
 import type { Habit } from '../types';
 import { allCompletions, listHabits, toggleCompletion } from '../db';
 import { currentStreak, greeting, isScheduled, todayKey } from '../date-utils';
 import { useTheme } from '../theme';
 import { ProgressRing } from '../components/ProgressRing';
+import { refreshTodayWidget } from '../widgets/refreshTodayWidget';
 
 const DATE_FMT = new Intl.DateTimeFormat(undefined, {
   weekday: 'long',
@@ -29,6 +30,7 @@ export function TodayScreen() {
     for (const c of completions) map.get(c.habit_id)?.add(c.day);
     setHabits(allHabits);
     setDoneMap(map);
+    void refreshTodayWidget();
   }, []);
 
   useFocusEffect(
@@ -124,7 +126,7 @@ export function TodayScreen() {
                         { borderColor: habit.color },
                         done && { backgroundColor: habit.color },
                       ]}>
-                      {done ? <MaterialIcons name="check" size={26} color="#FFFFFF" /> : null}
+                      {done ? <Icon name="check" size={26} color="#FFFFFF" /> : null}
                     </Pressable>
                   </View>
                 );

@@ -1,8 +1,9 @@
 import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { APPS, AppTileButton } from '../hub/apps';
+import { AppTileButton, resolveAppsOrder } from '../hub/apps';
+import { useHub } from '../hub/HubContext';
 import { useTheme } from '../theme';
 
 /** Home-screen-style launcher: the hub of the little app collection. */
@@ -10,6 +11,14 @@ export function LauncherScreen() {
   const theme = useTheme();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
+  const { appsOrder } = useHub();
+  const rows = resolveAppsOrder(appsOrder);
+  const { width } = useWindowDimensions();
+  const isDesktop = width > 640;
+
+  // Desktop: larger tiles and a wider, centered grid. Phone: original 3-col feel.
+  const size = isDesktop ? 104 : 82;
+  const gap = isDesktop ? 26 : 22;
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.bg }]} edges={['top']}>
@@ -22,12 +31,12 @@ export function LauncherScreen() {
           </View>
         </View>
 
-        <View style={styles.grid}>
-          {APPS.map((app) => (
+        <View style={[styles.grid, { gap }]}>
+          {rows.map((app) => (
             <AppTileButton
               key={app.key}
               app={app}
-              size={82}
+              size={size}
               onPress={() => navigation.navigate(app.key)}
             />
           ))}
@@ -72,6 +81,7 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 22,
+    justifyContent: 'flex-start',
   },
 });
+

@@ -21,6 +21,11 @@ expo-env.d.ts
 # Metro
 .metro-health-check*
 
+# Electron desktop build outputs (generated)
+electron/dist/
+electron/release/
+electron/icon.png
+
 # debug
 npm-debug.*
 yarn-debug.*
@@ -35,6 +40,9 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# ai smoke test build output
+.smoke-tmp/
 
 # generated native folders
 /ios

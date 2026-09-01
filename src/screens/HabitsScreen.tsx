@@ -2,15 +2,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Icon, IconName } from '../icons';
 import type { Habit } from '../types';
 import { deleteHabit, listHabits } from '../db';
 import { syncReminders } from '../notifications';
 import { formatReminder, scheduleLabel } from '../date-utils';
 import { useTheme } from '../theme';
 import { HabitForm } from '../components/HabitForm';
-
-type IconName = React.ComponentProps<typeof MaterialIcons>['name'];
 
 export function HabitsScreen() {
   const theme = useTheme();
@@ -74,7 +72,7 @@ export function HabitsScreen() {
         <Pressable
           onPress={openNew}
           style={[styles.addButton, { backgroundColor: theme.accent }]}>
-          <MaterialIcons name="add" size={22} color="#FFFFFF" />
+          <Icon name="add" size={22} color="#FFFFFF" />
           <Text style={styles.addButtonText}>New</Text>
         </Pressable>
       </View>
@@ -101,10 +99,10 @@ export function HabitsScreen() {
               </View>
             </Pressable>
             <Pressable onPress={() => openEdit(habit)} hitSlop={8} style={styles.iconBtn}>
-              <MaterialIcons name="edit" size={20} color={theme.sub} />
+              <Icon name="edit" size={20} color={theme.sub} />
             </Pressable>
             <Pressable onPress={() => confirmDelete(habit)} hitSlop={8} style={styles.iconBtn}>
-              <MaterialIcons name="delete-outline" size={20} color={theme.sub} />
+              <Icon name="delete-outline" size={20} color={theme.sub} />
             </Pressable>
           </View>
         ))}

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Icon } from '../../icons';
 import { createNote, getNote, setNoteFavorite, trashNote, updateNote } from '../../db';
 import { formatNoteDate } from '../../date-utils';
 import { useTheme } from '../../theme';
@@ -114,7 +114,7 @@ export function NoteEditorScreen() {
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.bg }]} edges={['top']}>
       <View style={styles.headerRow}>
         <Pressable onPress={() => { flush(); navigation.goBack(); }} hitSlop={8} style={styles.iconBtn}>
-          <MaterialIcons name="chevron-left" size={26} color={theme.text} />
+          <Icon name="chevron-left" size={26} color={theme.text} />
         </Pressable>
         <View style={styles.headerMiddle}>
           <Text style={[styles.headerTitle, { color: theme.sub }]}>
@@ -124,14 +124,14 @@ export function NoteEditorScreen() {
         {noteExists ? (
           <View style={styles.headerActions}>
             <Pressable onPress={toggleFavorite} hitSlop={8} style={styles.iconBtn}>
-              <MaterialIcons
+              <Icon
                 name={favorite ? 'star' : 'star-border'}
                 size={22}
                 color={favorite ? '#F59E0B' : theme.sub}
               />
             </Pressable>
             <Pressable onPress={confirmDelete} hitSlop={8} style={styles.iconBtn}>
-              <MaterialIcons name="delete-outline" size={22} color={theme.danger} />
+              <Icon name="delete-outline" size={22} color={theme.danger} />
             </Pressable>
           </View>
         ) : (

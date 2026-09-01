@@ -20,3 +20,17 @@ export const HABIT_EMOJIS = [
 export const DEFAULT_COLOR = HABIT_COLORS[0];
 export const DEFAULT_EMOJI = HABIT_EMOJIS[0];
 export const DEFAULT_REMINDER_MINUTES = 8 * 60; // 8:00 AM
+
+export const COLLECTION_EMOJIS = [
+  '📋', '🛒', '🌅', '💪', '🏠', '📚', '💼', '🎁',
+  '✈️', '🍳', '🧺', '🐶', '🎓', '🎬', '🛠️', '🎯',
+];
+
+export const DEFAULT_COLLECTION_EMOJI = COLLECTION_EMOJIS[0];
+
+export const ROUTINE_EMOJIS = [
+  '🔁', '🌅', '☀️', '🪥', '🚿', '🥗', '💪', '🧘',
+  '📚', '🏠', '💊', '🏃', '😴', '🧠', '🫖', '🌙',
+];
+
+export const DEFAULT_ROUTINE_EMOJI = ROUTINE_EMOJIS[0];

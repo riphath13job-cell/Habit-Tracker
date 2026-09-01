@@ -1,10 +1,11 @@
-# My Apps 🎯📝
+# Blueprint 🎯📝
 
-A personal mini-app hub for iPhone — **Habit Tracker** and **Notes** — built and maintained
+A personal mini-app hub for iPhone — **Blueprint** — built and maintained
 **completely free, with no Mac and no $99/year Apple Developer Program**. It installs on your
-iPhone via free-app-identity sideloading (Sideloadly), or runs inside Expo Go.
+iPhone via free-app-identity sideloading (Sideloadly), and includes a native home-screen
+**"Blueprint" widget** (today's habit progress, streak, and habit list).
 
-**Habit Tracker:** daily check-offs with a progress ring, streaks (current + best), weekday
+**Blueprint (core habits):** daily check-offs with a progress ring, streaks (current + best), weekday
 schedules, per-habit colors & emoji, daily local-notification reminders, 30-day stats, weekly
 chart, per-habit calendar, automatic dark mode.
 
@@ -15,6 +16,26 @@ dates, favorites ⭐, and a Trash page with restore / delete-forever / empty-tra
 bottom bar has an **Apps folder button** that opens an iOS-style liquid-glass folder overlay for
 switching apps. The app icon is generated from code (`assets/icon.png`). Backups
 (Settings → Export) include habits **and** notes (also trashed ones).
+
+---
+
+## Rule for AI tools and agents editing this app
+
+> **After changing any JavaScript-only code (UI, logic, screens), an AI (or any editor) MAY publish
+> the change to the user's iPhone with:**
+>
+> ```bash
+> npx eas update --branch default --message "my change"
+> ```
+>
+> This uploads the JS update to the `default` channel served to the sideloaded app, and the phone
+> downloads it the next time the app is opened (needs internet once).
+>
+> **Native changes — the **home-screen widget** included — can NOT be shipped by `eas update`.**
+> Widget layout, the `app.json` widget config, and any native module change require a **fresh IPA
+> build** (see "Build the installable app" below): push to GitHub, run the **Build unsigned iOS
+> IPA** workflow, then re-install via Sideloadly. The widget appears on the home screen after you
+> add it (long-press the home screen → `+` → search "Blueprint").
 
 ---
 
@@ -32,32 +53,24 @@ you'll only ever use one).
 
 ---
 
-## Using it inside Expo Go (current setup — no install needed)
+## Two ways to run: Expo Go (JS preview only) vs the standalone app (with widget)
 
-For now the app is used **inside the Expo Go app** instead of a sideloaded home-screen app.
-Zero maintenance: no 7-day expiry, no cables, no weekly re-signing. Things to know:
+The **home-screen widget is a native feature**, so it only works in the **standalone sideloaded
+app** (Build → Sideloadly below), never in Expo Go. For quick JS-only previews you can still use
+Expo Go during development, but the installed phone app that shows the widget is the one you get
+from the GitHub Actions build. Things to know:
 
-- **The app needs the PC while in dev mode.** Expo Go loads it from `npx expo start`, so it only
-  opens while the dev server runs and the phone is on the same Wi-Fi. If the connection is
-  blocked (campus/hotel Wi-Fi), start with `npx expo start --tunnel` to route over the internet.
-- **Use it anywhere without the PC (still free) — publish it:**
-  ```bash
-  npx eas login        # free account: create it at https://expo.dev/signup first
-  npx eas init         # registers the project (writes its ID into app.json)
-  npx eas update --branch preview --message "first version"
-  ```
-  The command prints a **link + QR** (`https://u.expo.dev/…`). Open it on the iPhone (camera or
-  Safari) and it launches the app in Expo Go from anywhere — PC off, any network. After changing
-  the app, re-run the same `eas update` command and the link serves the new version. Notes:
-  never add a custom `runtimeVersion` to app.json (Expo Go refuses it), and stay on the SDK the
-  App Store Expo Go supports (54 — see Troubleshooting). Habit data stays on the phone inside
-  Expo Go either way.
-- **Data care.** The database lives inside Expo Go's storage. Don't delete Expo Go (that wipes
-  the data) and use **Settings → Export backup** occasionally. That same export is how you move
-  your data into the standalone sideloaded app later — it lives in a separate sandbox.
-- **Switching to the standalone app later** is not blocked by anything: push the repo to GitHub,
-  run the Actions workflow, install via Sideloadly (see below). The export/import in Settings
-  moves your history over.
+- **Expo Go only previews the JS.** It cannot render the native widget and cannot run the new
+  native `@expo/ui` widget extension, so the widget won't show and some SwiftUI-only views may
+  not render inside Expo Go. Use it just for quick UI iteration; use the standalone app for the
+  real experience.
+- **The standalone app needs the PC on the same network in dev, or an OTA update.**
+  `npx expo start` serves the JS; `npx eas update --branch default` pushes a JS update that the
+  installed app fetches on next launch (internet needed once). Native/widget changes still need a
+  fresh IPA build.
+- **Data care.** Each install's database lives in that app's own sandbox. Keep a JSON backup via
+  **Settings → Export backup**; the same file restores into the standalone app and moves history
+  across installs.
 
 ---
 
@@ -100,7 +113,7 @@ be re-signed every week — you don't need a fresh build to renew it.
 5. Click **Start**. First time takes a few minutes.
 6. On the iPhone: **Settings → General → VPN & Device Management** → tap your Apple ID → **Trust**.
    If asked (iOS 16+), enable Developer Mode.
-7. The **Habit Tracker** icon appears on your home screen. Done 🎉
+7. The **Blueprint** icon appears on your home screen. Done 🎉
 
 > Tip: use a secondary Apple ID just for sideloading. Signing is done locally — your password is
 > only used to talk to Apple's servers from your own PC.
@@ -134,17 +147,21 @@ src/components/ProgressRing.tsx SVG progress ring
 src/components/GlassTabBar.tsx   floating "liquid glass" bottom bar with sliding pill
 src/screens/                Today / Habits / Stats / Settings
 src/screens/notes/          Notes list + autosaving editor
+src/widgets/                home-screen widget: TodayWidget.tsx (layout), refreshTodayWidget.ts (snapshot push)
 .github/workflows/build-ipa.yml  free cloud build → unsigned IPA
 ```
 
 ## Troubleshooting
 
-- **"Project is incompatible with this version of Expo Go"**: throughout 2026 the iOS App Store
-  version of Expo Go is stuck on **SDK 54** (Apple review delays), so this project is deliberately
-  pinned to SDK 54. Updating Expo Go won't help — there is no newer store version. Before ever
-  upgrading the project (`npm install expo@latest && npx expo install --fix`), check whether the
-  store Expo Go caught up at [expo.dev/go](https://expo.dev/go).
-
+- **"Project is incompatible with this version of Expo Go"**: the App Store Expo Go may lag behind
+  the project's SDK. This project targets the latest Expo SDK (57) so it can build the native
+  widget. If you only need JS previews and Expo Go complains, either open the project in the
+  matching SDK or, better, use the **standalone app** from the GitHub Actions build instead of
+  Expo Go.
+- **Widget doesn't appear on the home screen**: the widget ships inside the standalone IPA, not
+  Expo Go. After installing via Sideloadly, long-press the home screen → tap **+** → search
+  "Blueprint" → Add Widget. If you changed the widget layout, you must rebuild a fresh IPA
+  (push → GitHub Actions → Sideloadly); an `eas update` won't change native widget code.
 - **Workflow fails at xcodebuild**: open the run log; if it complains about Xcode/iOS SDK
   versions, try changing `runs-on:` to `macos-latest`, or pin a newer Xcode with
   `sudo xcode-select -s /Applications/Xcode_<version>.app` before the build step.

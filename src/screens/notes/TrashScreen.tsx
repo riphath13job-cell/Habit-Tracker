@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Icon } from '../../icons';
 import type { Note } from '../../types';
 import { deleteNote, emptyTrash, listTrashedNotes, restoreNote } from '../../db';
 import { useTheme } from '../../theme';
@@ -93,10 +93,10 @@ export function TrashScreen() {
                   }}
                   hitSlop={8}
                   style={styles.iconBtn}>
-                  <MaterialIcons name="restore" size={20} color={theme.accent} />
+                  <Icon name="restore" size={20} color={theme.accent} />
                 </Pressable>
                 <Pressable onPress={() => confirmDeleteForever(item)} hitSlop={8} style={styles.iconBtn}>
-                  <MaterialIcons name="delete-forever" size={20} color={theme.danger} />
+                  <Icon name="delete-forever" size={20} color={theme.danger} />
                 </Pressable>
               </>
             }

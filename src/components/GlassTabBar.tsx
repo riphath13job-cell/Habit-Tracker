@@ -1,20 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Platform, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { Animated, Platform, Pressable, StyleSheet, Text, useColorScheme, useWindowDimensions, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Icon } from '../icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useTheme } from '../theme';
 import { useHub } from '../hub/HubContext';
 
 const BAR_HEIGHT = 62;
+const DESKTOP_BAR_HEIGHT = 52;
 const PILL_HEIGHT = 38;
 
 /**
  * Floating "liquid glass" bottom tab bar with an animated pill that slides
  * between tabs, plus a trailing folder button that opens the app hub.
+ * On desktop it is shorter and centered instead of spanning the whole width.
  */
 export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const theme = useTheme();
@@ -23,6 +25,9 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
   const { openFolder, folderOpen } = useHub();
   const [barWidth, setBarWidth] = useState(0);
   const translateX = useRef(new Animated.Value(0)).current;
+  const { width: winWidth } = useWindowDimensions();
+  const isDesktop = winWidth > 640;
+  const barHeight = isDesktop ? DESKTOP_BAR_HEIGHT : BAR_HEIGHT;
 
   const tabCount = state.routes.length;
   // one extra slot for the folder button so the pill math stays even
@@ -43,16 +48,21 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
   return (
     <View
       pointerEvents="box-none"
-      style={[styles.wrap, { paddingBottom: insets.bottom + 10 }]}>
+      style={[
+        styles.wrap,
+        { paddingBottom: insets.bottom + (isDesktop ? 14 : 10) },
+        isDesktop && styles.wrapDesktop,
+      ]}>
       <View
         onLayout={(e) => setBarWidth(e.nativeEvent.layout.width)}
         style={[
           styles.bar,
           {
-            height: BAR_HEIGHT,
+            height: barHeight,
             backgroundColor: dark ? 'rgba(20, 24, 33, 0.42)' : 'rgba(255, 255, 255, 0.42)',
             borderColor: dark ? 'rgba(255, 255, 255, 0.10)' : 'rgba(255, 255, 255, 0.60)',
           },
+          isDesktop && styles.barDesktop,
         ]}>
         <BlurView
           intensity={dark ? 42 : 58}
@@ -80,6 +90,7 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
             style={[
               styles.pill,
               {
+                top: (barHeight - PILL_HEIGHT) / 2,
                 width: Math.max(tabWidth - 14, 0),
                 transform: [{ translateX }],
                 backgroundColor: dark ? 'rgba(255, 255, 255, 0.10)' : 'rgba(255, 255, 255, 0.70)',
@@ -125,7 +136,7 @@ export function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProp
               openFolder();
             }}
             android_ripple={{ borderless: true, radius: 26, color: theme.chipBg }}>
-            <MaterialIcons
+            <Icon
               name={folderOpen ? 'folder-open' : 'folder'}
               size={23}
               color={folderOpen ? theme.accent : theme.sub}
@@ -150,6 +161,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: 16,
   },
+  wrapDesktop: {
+    alignItems: 'center',
+    paddingHorizontal: 0,
+  },
   bar: {
     borderWidth: 1,
     borderRadius: 28,
@@ -159,6 +174,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.22,
     shadowRadius: 18,
     elevation: 12,
+  },
+  barDesktop: {
+    maxWidth: 460,
+    width: '100%',
   },
   row: {
     flex: 1,
@@ -175,8 +194,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.12,
     shadowRadius: 6,
-  },
-  tab: {
+  },  tab: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',

@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Icon } from '../../icons';
 import type { Note } from '../../types';
 import { listFavoriteNotes, setNoteFavorite, trashNote } from '../../db';
 import { useTheme } from '../../theme';
@@ -38,7 +38,7 @@ export function FavoritesScreen() {
         <Pressable
           onPress={() => navigation.navigate('NoteEditor', {})}
           style={[styles.newButton, { backgroundColor: theme.accent }]}>
-          <MaterialIcons name="add" size={22} color="#FFFFFF" />
+          <Icon name="add" size={22} color="#FFFFFF" />
           <Text style={styles.newButtonText}>New</Text>
         </Pressable>
       </View>
@@ -64,10 +64,10 @@ export function FavoritesScreen() {
             actions={
               <>
                 <Pressable onPress={async () => { await setNoteFavorite(item.id, false); load(); }} hitSlop={8} style={styles.iconBtn}>
-                  <MaterialIcons name="star" size={20} color="#F59E0B" />
+                  <Icon name="star" size={20} color="#F59E0B" />
                 </Pressable>
                 <Pressable onPress={() => confirmTrash(item)} hitSlop={8} style={styles.iconBtn}>
-                  <MaterialIcons name="delete-outline" size={20} color={theme.sub} />
+                  <Icon name="delete-outline" size={20} color={theme.sub} />
                 </Pressable>
               </>
             }

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "HabitTracker",
+    "name": "Blueprint",
     "slug": "habit-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,7 +11,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.richa.habittracker",
       "infoPlist": {
-        "CFBundleDisplayName": "Habit Tracker"
+        "CFBundleDisplayName": "Blueprint"
       }
     },
     "android": {
@@ -29,7 +29,45 @@
     },
     "plugins": [
       "expo-sqlite",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Blueprint uses your photo library to set book covers."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#4338CA",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#1E1B4B"
+          }
+        }
+      ],
+      "expo-secure-store",
+      "expo-sharing",
+      "expo-status-bar",
+      [
+        "expo-widgets",
+        {
+          "groupIdentifier": "group.com.richa.habittracker",
+          "widgets": [
+            {
+              "name": "TodayWidget",
+              "displayName": "Blueprint",
+              "description": "Today's habit progress and streak.",
+              "ios": {
+                "supportedFamilies": ["systemSmall", "systemMedium", "systemLarge"]
+              }
+            }
+          ]
+        }
+      ]
     ],
     "extra": {
       "eas": {
@@ -38,7 +76,7 @@
     },
     "owner": "riphath13",
     "runtimeVersion": {
-      "policy": "appVersion"
+      "policy": "sdkVersion"
     },
     "updates": {
       "url": "https://u.expo.dev/83fc7deb-9fa3-472b-8df5-32e26f6a890d"

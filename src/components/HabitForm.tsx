@@ -13,12 +13,11 @@ import {
   View,
 } from 'react-native';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Icon } from '../icons';
 import type { Habit } from '../types';
 import { createHabit, listHabits, updateHabit } from '../db';
 import { syncReminders } from '../notifications';
-import { useTheme } from '../theme';
-import {
+import { useTheme } from '../theme';import {
   DEFAULT_COLOR,
   DEFAULT_EMOJI,
   DEFAULT_REMINDER_MINUTES,
@@ -26,6 +25,8 @@ import {
   HABIT_EMOJIS,
 } from '../constants';
 import { scheduledWeekdays, WEEKDAY_LETTERS } from '../date-utils';
+import { LIFE_SPHERES, type LifeSphere } from '../types';
+import { PlatformDateTimePicker } from './PlatformDateTimePicker';
 
 export function HabitForm({
   visible,
@@ -42,6 +43,7 @@ export function HabitForm({
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState(DEFAULT_EMOJI);
   const [color, setColor] = useState(DEFAULT_COLOR);
+  const [sphere, setSphere] = useState<LifeSphere>('body');
   const [customDays, setCustomDays] = useState(false);
   const [weekdays, setWeekdays] = useState<Set<number>>(new Set());
   const [reminderOn, setReminderOn] = useState(false);
@@ -59,6 +61,7 @@ export function HabitForm({
       setWeekdays(new Set(days ?? []));
       setReminderOn(habit.reminder_minutes != null);
       setReminderMinutes(habit.reminder_minutes ?? DEFAULT_REMINDER_MINUTES);
+      setSphere((habit.sphere as LifeSphere) ?? 'body');
     } else {
       setName('');
       setEmoji(DEFAULT_EMOJI);
@@ -67,6 +70,7 @@ export function HabitForm({
       setWeekdays(new Set());
       setReminderOn(false);
       setReminderMinutes(DEFAULT_REMINDER_MINUTES);
+      setSphere('body');
     }
   }, [visible, habit]);
 
@@ -105,6 +109,7 @@ export function HabitForm({
         schedule,
         reminder_minutes: reminderOn ? reminderMinutes : null,
         created_at: habit?.created_at ?? Date.now(),
+        sphere,
       };
       if (habit) {
         await updateHabit({ ...base, id: habit.id });
@@ -169,8 +174,22 @@ export function HabitForm({
                 onPress={() => setColor(c)}
                 style={[styles.colorDot, { backgroundColor: c }, color === c && styles.colorDotSelected]}>
                 {color === c ? (
-                  <MaterialIcons name="check" size={16} color="#FFFFFF" />
+                  <Icon name="check" size={16} color="#FFFFFF" />
                 ) : null}
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={[styles.sectionLabel, { color: theme.sub }]}>LIFE SPHERE</Text>
+          <View style={styles.chipRow}>
+            {LIFE_SPHERES.map((s) => (
+              <Pressable
+                key={s.id}
+                onPress={() => setSphere(s.id)}
+                style={[styles.chip, { backgroundColor: sphere === s.id ? theme.accent : theme.chipBg }]}>
+                <Text style={[styles.chipText, { color: sphere === s.id ? '#FFFFFF' : theme.sub }]}>
+                  {s.label}
+                </Text>
               </Pressable>
             ))}
           </View>
@@ -217,7 +236,7 @@ export function HabitForm({
 
           <Text style={[styles.sectionLabel, { color: theme.sub }]}>REMINDER</Text>
           <View style={[styles.rowCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <MaterialIcons name="notifications" size={22} color={theme.sub} />
+            <Icon name="notifications" size={22} color={theme.sub} />
             <Text style={[styles.rowCardText, { color: theme.text }]}>Daily reminder</Text>
             <Switch
               value={reminderOn}
@@ -229,7 +248,7 @@ export function HabitForm({
           {reminderOn ? (
             <View style={[styles.rowCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
               <Text style={[styles.rowCardText, { color: theme.text }]}>Remind me at</Text>
-              <DateTimePicker mode="time" value={timeValue} onChange={onTimePicked} />
+              <PlatformDateTimePicker mode="time" value={timeValue} onChange={onTimePicked} />
             </View>
           ) : null}
 

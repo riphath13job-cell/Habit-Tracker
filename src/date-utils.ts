@@ -12,6 +12,20 @@ export function todayKey(): string {
   return dayKey(new Date());
 }
 
+/** Minutes (local) past midnight when daily routines reset — 12:00 PM. */
+export const ROUTINE_RESET_MINUTES = 12 * 60;
+
+/**
+ * Day key for daily routines. Each checklist window runs from the reset time to
+ * the *next* reset time: after 12 PM the window is today's, before 12 PM it
+ * still belongs to yesterday (which started yesterday at noon). This is what
+ * makes every item appear unchecked again right at noon.
+ */
+export function routineDayKey(now = new Date()): string {
+  const minutes = now.getHours() * 60 + now.getMinutes();
+  return minutes >= ROUTINE_RESET_MINUTES ? dayKey(now) : dayKey(addDays(now, -1));
+}
+
 export function addDays(d: Date, n: number): Date {
   const copy = new Date(d);
   copy.setDate(copy.getDate() + n);

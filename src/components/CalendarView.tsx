@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Icon, IconName } from '../icons';
 import type { Habit } from '../types';
 import { addDays, dayKey, isScheduled, monthLabel, todayKey, WEEKDAY_LETTERS } from '../date-utils';
 import { useTheme } from '../theme';
-
-type IconName = React.ComponentProps<typeof MaterialIcons>['name'];
 
 /** Read-only month grid showing this habit's completion history. */
 export function CalendarView({ habit, done }: { habit: Habit; done: ReadonlySet<string> }) {
@@ -37,7 +35,7 @@ export function CalendarView({ habit, done }: { habit: Habit; done: ReadonlySet<
           onPress={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}
           style={styles.arrowBtn}
           hitSlop={8}>
-          <MaterialIcons
+          <Icon
             name="chevron-left"
             size={22}
             color={canPrev ? theme.text : theme.border}
@@ -49,7 +47,7 @@ export function CalendarView({ habit, done }: { habit: Habit; done: ReadonlySet<
           onPress={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}
           style={styles.arrowBtn}
           hitSlop={8}>
-          <MaterialIcons
+          <Icon
             name="chevron-right"
             size={22}
             color={canNext ? theme.text : theme.border}

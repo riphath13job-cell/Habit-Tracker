@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Icon } from '../icons';
 import type { Note } from '../types';
 import { formatNoteDate } from '../date-utils';
 import { useTheme } from '../theme';
@@ -24,7 +24,7 @@ export function NoteCard({
         style={({ pressed }) => [styles.body, pressed && { opacity: 0.7 }]}>
         <View style={styles.titleRow}>
           {note.favorite === 1 ? (
-            <MaterialIcons name="star" size={14} color="#F59E0B" style={styles.star} />
+            <Icon name="star" size={14} color="#F59E0B" style={styles.star} />
           ) : null}
           <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
             {note.title.trim() || 'Untitled'}
